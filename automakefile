@@ -1,0 +1,283 @@
+##
+## EPITECH PROJECT, 2021
+## B-SYN-200-REN-2-1-automakefile-audrey.amar
+## File description:
+## automakefile
+##
+
+#!/bin/bash
+
+exe=$0 ##set arg
+
+if [ -z $1 ] || [ $# != 1 ]
+then
+    printf "%s: Arguement invalid." $0
+    exit 84
+else
+    config=$1
+	if [ ! -f $config ]
+    then
+        exit 84
+    fi
+    IFS=";"
+    count=0
+	STR=$( tail -n 1 $config )
+	var1=$(echo $STR | cut -f1 -d' ')
+	var2=$(echo $STR | cut -f2 -d' ')
+    while read -r line
+    do
+        array=($line)
+        if [[ ${array[0]} == "PROJECT_DIR" ]]
+	then
+	    project_dir=${array[1]}
+		isprojectdir=1
+	elif [[ ${array[0]} == "SOURCES_DIR" ]]
+	then
+	    sources_dir=${array[1]}
+	elif [[ ${array[0]} == "HEADERS_DIR" ]]
+	then
+	    header=${array[1]}
+	elif [[ ${array[0]} == "LIBS_DIR" ]]
+	then
+	    libdir=${array[1]}
+	elif [[ ${array[0]} == "EXEC" ]]
+	then
+	    binary_name=${array[1]}
+	elif [[ ${array[0]} == "CC" ]]
+	then
+	    compilation=${array[1]}
+	elif [[ ${array[0]} == "CFLAGS" ]]
+	then
+	    compilation_flags=${array[1]}
+	elif [[ ${array[0]} == *.c ]]
+	then
+	    sources[count]=${array[0]}
+	    ((count++))
+	elif [[ ${array[0]} == "LDFLAGS" ]]
+	then
+	    linking_flags=${array[1]}
+	elif [[ ${array[0]} == "BCK_DIR" ]]
+	then
+	    backup_dir=${array[1]}
+	elif [[ ${array[0]} == "ZIP" ]]
+	then
+	    zip_name=${array[1]}
+	elif [[ ${array[0]} == "ZIPFLAGS" ]]
+	then
+	    zip_flags=${array[1]}
+	elif [[ ${array[0]} == "UNZIP" ]]
+	then
+	    unzip_name=${array[1]}
+	elif [[ ${array[0]} == "UNZIPFLAGS" ]]
+	then
+	    unzip_flags=${array[1]}
+	fi
+    done < $config
+
+
+	if [[ $var1 == "UNZIPFLAGS" ]]
+	then
+	    unzip_flags=$var2
+	elif [[ $var1 == "PROJECT_DIR" ]]
+	then
+	    project_dir=$var2
+		isprojectdir=1
+	elif [[ $var1 == "SOURCES_DIR" ]]
+	then
+	    sources_dir=$var2
+	elif [[ $var1 == "HEADERS_DIR" ]]
+	then
+	    header=$var2
+	elif [[ $var1 == "LIBS_DIR" ]]
+	then
+	    libdir=$var2
+	elif [[ $var1 == "EXEC" ]]
+	then
+	    binary_name=$var2
+	elif [[ $var1 == "CC" ]]
+	then
+	    compilation=$var2
+	elif [[ $var1 == "CFLAGS" ]]
+	then
+	    compilation_flags=$var2
+	elif [[ $var1 == *.c ]]
+	then
+	    sources[count]=$var1
+	    ((count++))
+	elif [[ $var1 == "LDFLAGS" ]]
+	then
+	    linking_flags=$var2
+	elif [[ $var1 == "BCK_DIR" ]]
+	then
+	    backup_dir=$var2
+	elif [[ $var1 == "ZIP" ]]
+	then
+	    zip_name=$var2
+	elif [[ $var1 == "ZIPFLAGS" ]]
+	then
+	    zip_flags=$var2
+	elif [[ $var1 == "UNZIP" ]]
+	then
+	    unzip_name=$var2
+	fi
+
+
+	if [[ -z $isprojectdir ]]
+    then
+        exit 84
+    fi
+	if [[ $count < 1 ]]
+    then
+        exit 84
+    fi
+	
+	for ((i=0; $i < $count; i++))
+    do
+		if [[ ! -f $project_dir/${sources[$i]} ]]
+		then 
+			exit 84
+		fi
+	done
+	
+    echo -e "##" > Makefile
+    echo -e "## EPITECH PROJECT, 2021" >> Makefile
+    echo -e "## Makefile" >> Makefile
+    echo -e "## File description:" >> Makefile
+    echo -e "## MY_MAKEFILE" >> Makefile
+    echo -e "##\n" >> Makefile
+	if [[ $sources_dir == "." ]]
+	then
+		echo -e "SRCDIR\t=\t./\n" >> Makefile
+	elif [[ -z ${sources_dir} ]]
+	then
+		echo -e "SRCDIR\t=\t./\n" >> Makefile
+	elif [[ ! -d $sources_dir ]]
+	then
+		mkdir $project_dir/$sources_dir
+	else
+    	echo -e "SRCDIR\t=\t${sources_dir}/\n" >> Makefile
+	fi
+    echo -e "PROJECTDIR\t=\t${project_dir}/\n" >> Makefile
+    echo -e "LIBDIR\t=\t${libdir}/\n" >> Makefile
+    echo -e "INCDIR\t=\t${header}/\n" >> Makefile
+	echo -e "BACKUPDIR\t=\t${backup_dir}/\n" >> Makefile
+	echo -e "ZIP\t=\t${zip_name}\n" >> Makefile
+	echo -e "UNZIP\t=\t${unzip_name}\n" >> Makefile
+	if [[ -z ${binary_name} ]]
+	then
+		echo -e "NAME\t=\ta.out\n" >> Makefile
+	else
+    	echo -e "NAME\t=\t${binary_name}\n" >> Makefile
+	fi
+    for ((i=0; $i < $count; i++))
+    do
+        if [ $i == 0 ]
+        then
+            echo -e "SRC\t=\t\$(SRCDIR)${sources[$i]}\t\\" >> Makefile
+        else
+            echo -e "\t\t\$(SRCDIR)${sources[$i]}\t\\" >> Makefile
+        fi
+    done
+	if [[ -z ${binary_name} ]]
+	then
+		echo -e "\nCC\t=\tgcc\n" >> Makefile
+	else
+    	echo -e "\nCC\t=\t$compilation\n" >> Makefile
+	fi
+    echo -e 'OBJ\t=\t$(SRC:.c=.o)\n' >> Makefile
+    echo -e "CFLAGS\t=\t$compilation_flags -I\$(INCDIR)\n" >> Makefile
+	echo -e "LDFLAGS\t=\t$linking_flags\n" >> Makefile
+	echo -e "ZIPFLAGS\t=\t$zip_flags\n" >> Makefile
+	echo -e "UNZIPFLAGS\t=\t$unzip_flags\n" >> Makefile
+
+####################################RULES######################################
+
+	if [[ ! -d ${libdir} ]]
+	then 
+		if [[ -e $libdir/Makefile ]]
+		then
+			echo -e "all:\t\$(NAME)" >> Makefile
+			echo -e "\n\$(NAME):\t\$(OBJ)" >> Makefile
+			echo -e "\t\$(MAKE) -C \$(LIBDIR)" >> Makefile
+			echo -e "\t\$(CC) -o \$(NAME) \$(OBJ) \$(CFLAGS) \$(LDFLAGS) -L \$(LIBDIR)\n" >> Makefile
+
+
+			echo -e "clean:" >> Makefile
+			echo -e "\trm -f \$(OBJ)\n" >> Makefile
+
+
+			echo -e "fclean:\tclean" >> Makefile
+			echo -e "\trm -f *.gcno" >> Makefile
+			echo -e "\trm -f *.c~" >> Makefile
+			echo -e "\trm -f *~" >> Makefile
+			echo -e "\trm -f vgcore.*" >> Makefile
+			echo -e "\trm -f \$(NAME)\n" >> Makefile
+			echo -e "\t\$(CLEAN) -C \$(LIBDIR)" >> Makefile
+
+
+			echo -e "re:\tfclean all\n" >> Makefile
+
+
+			echo -e 'archive:\n\t@$(ZIP) $(ZIPFLAGS) $(BACKUPDIR)$(NAME) $(SRC)' >> Makefile
+			echo -e '\t@echo "$(NAME)file generated."' >> Makefile
+			echo -e "\t@mv -f .vers .old_vers" >> Makefile
+			echo -e "\t@awk '(NR==1){\$\$1++;}1' .old_vers >.vers" >> Makefile
+
+
+			echo -e '\nrevert:\n\t@$(UNZIP) $(UNZIPFLAGS) $(BACKUPDIR)$(NAME) $(SRC)' >> Makefile
+			echo -e "\t@mv -f .old_vers .vers" >> Makefile
+			echo -e "\t@awk '(NR==1){\$\$1--;}1' .vers >.old_vers" >> Makefile
+
+
+			echo -e '\nnum:' >> Makefile
+			echo -e '\t@cat .vers' >> Makefile
+
+
+			echo -e '\ndelete:' >> Makefile
+			echo -e '\trm -fr $(BACKUPDIR)$(NAME)' >> Makefile
+		else
+			echo -e "all:\t\$(NAME)" >> Makefile
+			echo -e "\n\$(NAME):\t\$(OBJ)" >> Makefile
+			echo -e "\t\$(CC) -o \$(NAME) \$(OBJ) \$(CFLAGS) \$(LDFLAGS) -L \$(LIBDIR)\n" >> Makefile
+
+
+			echo -e "clean:" >> Makefile
+			echo -e "\trm -f \$(OBJ)\n" >> Makefile
+
+
+			echo -e "fclean:\tclean" >> Makefile
+			echo -e "\trm -f *.gcno" >> Makefile
+			echo -e "\trm -f *.c~" >> Makefile
+			echo -e "\trm -f *~" >> Makefile
+			echo -e "\trm -f vgcore.*" >> Makefile
+			echo -e "\trm -f \$(NAME)\n" >> Makefile
+
+
+			echo -e "re:\tfclean all\n" >> Makefile
+
+
+			echo -e 'archive:\n\t@$(ZIP) $(ZIPFLAGS) $(BACKUPDIR)$(NAME) $(SRC)' >> Makefile
+			echo -e '\t@echo "$(NAME)file generated."' >> Makefile
+			echo -e "\t@mv -f .vers .old_vers" >> Makefile
+			echo -e "\t@awk '(NR==1){\$\$1++;}1' .old_vers >.vers" >> Makefile
+
+
+			echo -e '\nrevert:\n\t@$(UNZIP) $(UNZIPFLAGS) $(BACKUPDIR)$(NAME) $(SRC)' >> Makefile
+			echo -e "\t@mv -f .old_vers .vers" >> Makefile
+			echo -e "\t@awk '(NR==1){\$\$1--;}1' .vers >.old_vers" >> Makefile
+
+
+			echo -e '\nnum:' >> Makefile
+			echo -e '\t@cat .vers' >> Makefile
+
+
+			echo -e '\ndelete:' >> Makefile
+			echo -e '\trm -fr $(BACKUPDIR)$(NAME)' >> Makefile
+		fi
+	fi
+
+fi
+file=$(dirname $config)
+echo "1" > $file/.vers
+echo "0" > $file/.old_vers
+mv Makefile $file 
