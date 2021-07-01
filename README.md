@@ -1,7 +1,7 @@
 # automakefile
 Epitech project - générateur de makefile
 
-# TEST :
+# Test :
 
 1 - Makefile generation --> 75%
 
